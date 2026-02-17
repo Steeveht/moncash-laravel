@@ -12,19 +12,23 @@ Une librairie Laravel robuste et agnostique pour l'intégration de l'API MonCash
 
 ## Installation
 
+Installez le package via Composer :
+
 ```bash
 composer require steeve/moncash-laravel
 ```
 
 ## Configuration
 
-Publiez le fichier de configuration :
+### 1. Publiez le fichier de configuration :
 
 ```bash
 php artisan vendor:publish --tag=moncash-config
 ```
 
-Ajoutez vos clés dans `.env` :
+### 2. Variables d'environnement
+
+Ajoutez vos clés dans votre fichier `.env` :
 
 ```env
 MONCASH_MODE=sandbox
@@ -32,46 +36,113 @@ MONCASH_CLIENT_ID=votre_client_id
 MONCASH_SECRET=votre_client_secret
 ```
 
-## Utilisation Rapide
+- **sandbox**: Pour les tests.
+- **live**: Pour la production.
 
-### 1. Paiement (Redirection)
+### 3. Configuration du Portail MonCash (Business Portal)
+
+Lors de la création de votre application sur le portail MonCash, voici à quoi correspondent les champs pour Laravel :
+
+1. **Business Name** : Le nom de votre entreprise ou boutique.
+2. **Website URL** : L'URL de base de votre site (ex: `https://votre-site.com`).
+3. **Return URL (Link to receive the payment Notification)** : Votre URL de **Webhook/IPN**.
+   - Exemple : `https://votre-site.com/api/moncash/callback`
+4. **Alert URL (Thank you page)** : C'est l'URL de redirection **après** le paiement.
+   - Exemple : `https://votre-site.com/payment/success`
+
+> [!IMPORTANT]
+> Assurez-vous que ces URLs sont accessibles publiquement et que votre route de "Return URL" ne bloque pas les requêtes POST (pensez au middleware CSRF).
+
+---
+
+## Utilisation
+
+Vous pouvez utiliser la Facade `MonCash` ou l'injection de dépendance via la classe `Steeve\MonCashLaravel\MonCash`.
+
+### A. Créer un Paiement (Redirection)
 
 ```php
 use MonCash;
 
-// Dans votre contrôleur
-public function pay() {
-    $payment = MonCash::payment()->createPayment('ORDER_123', 500);
+public function payer(Request $request)
+{
+    // 1. Créer le paiement (ID commande unique, Montant en Gourdes)
+    $payment = MonCash::payment()->createPayment('ORDER-' . time(), 500);
+
+    // 2. Rediriger l'utilisateur vers MonCash
     return redirect($payment['redirect_url']);
 }
 ```
 
-### 2. Vérification (Webhook/Callback)
+### B. Vérifier un Paiement (Callback / IPN)
+
+Après le paiement, MonCash appelle votre webhook avec un `transactionId`.
 
 ```php
 use MonCash;
 
-public function callback(Request $request) {
+public function callback(Request $request)
+{
     $transactionId = $request->input('transactionId');
-    $details = MonCash::payment()->verifyByTransactionId($transactionId);
 
-    if ($details['payment']['message'] === 'successful') {
-        // Succès
+    try {
+        $details = MonCash::payment()->verifyByTransactionId($transactionId);
+
+        if ($details['payment']['message'] === 'successful') {
+            $payer = $details['payment']['payer'];
+            $amount = $details['payment']['cost'];
+            return "Merci pour votre paiement de $amount HTG par $payer";
+        }
+    } catch (\Steeve\MonCashLaravel\Sdk\Exception\MonCashPaymentException $e) {
+        return "Erreur : " . $e->getMessage();
     }
 }
 ```
 
-### 3. Transfert d'argent
+### C. Transfert d'Argent (P2P / Business)
 
 ```php
-MonCash::business()->transfert('50937000000', 100, 'Cadeau', 'REF_01');
+use MonCash;
+
+try {
+    // Numéro (509...), Montant, Description, Référence unique
+    $transfert = MonCash::business()->transfert(
+        '50937000000', 250, 'Paiement service', 'REF-12345'
+    );
+} catch (\Steeve\MonCashLaravel\Sdk\Exception\MonCashTransferException $e) {
+    return "Echec : " . $e->getMessage();
+}
 ```
+
+### D. Consulter le Solde et Statut
+
+```php
+// Vérifier le solde du compte Business
+$balance = MonCash::business()->prefundedBalance();
+
+// Vérifier le statut d'une transaction pré-financée
+$status = MonCash::business()->prefundedTransactionStatus('TRANSFER_ID');
+```
+
+### E. Vérifier un Compte Client
+
+```php
+$status = MonCash::customer()->customerStatus('50937000000');
+```
+
+## Gestion des Erreurs
+
+Exceptions spécifiques disponibles :
+
+- `Steeve\MonCashLaravel\Sdk\Exception\MonCashPaymentException`
+- `Steeve\MonCashLaravel\Sdk\Exception\MonCashTransferException`
+- `Steeve\MonCashLaravel\Sdk\Exception\MonCashException` (Base)
 
 ## Architecture
 
-- **`Steeve\MonCashLaravel\Sdk\`** : Contient la logique métier pure (Config, Auth, Payment, etc.).
-- **`Steeve\MonCashLaravel\MonCash`** : Wrapper Laravel qui s'injecte via le Service Container.
-- **`Steeve\MonCashLaravel\Facades\MonCash`** : Facade pour une utilisation statique fluide.
+- **`src/Sdk/`** : Logique métier pure, framework-agnostic.
+- **`src/MonCash.php`** : Wrapper Laravel principal.
+- **`src/Facades/MonCash.php`** : Accès statique simplifié.
 
 ## License
 
