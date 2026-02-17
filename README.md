@@ -233,6 +233,45 @@ public function pay(MonCashPayment $moncashPayment)
 }
 ```
 
+## Utilisation avec Laravel + Base de données
+
+### 1. Migration
+
+```php
+Schema::create('orders', function (Blueprint $table) {
+    $table->id();
+    $table->string('order_id')->unique();
+    $table->decimal('amount', 10, 2);
+    $table->string('status')->default('pending');
+    $table->timestamps();
+});
+```
+
+### 2. Contrôleur
+
+```php
+public function checkout() {
+    $payment = MonCash::payment()->createPayment('CMD-001', 500);
+
+    Order::create([
+        'order_id' => 'CMD-001',
+        'amount' => 500,
+        'status' => 'pending'
+    ]);
+
+    return redirect($payment['redirect_url']);
+}
+
+public function callback(Request $request) {
+    $details = MonCash::payment()->verifyByTransactionId($request->transactionId);
+
+    if ($details['payment']['message'] === 'successful') {
+        Order::where('order_id', $details['payment']['order_id'])
+             ->update(['status' => 'success']);
+    }
+}
+```
+
 ## Architecture
 
 - **`src/Sdk/`** : Logique métier pure, framework-agnostic.
