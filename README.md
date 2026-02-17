@@ -194,6 +194,14 @@ try {
 } catch (Exception $e) { /* Log error */ }
 ```
 
+## Architecture Headless / API-Only
+
+Si vous utilisez un frontend séparé (React, Vue, Mobile) :
+
+- Le **Backend** crée le paiement et renvoie l'URL de redirection au **Frontend**.
+- Le **Return URL** (MonCash Portal) pointe vers votre **API** (Backend).
+- L'**Alert URL** (MonCash Portal) pointe vers votre **Frontend** (React/Vue/Mobile).
+
 ## Utilisation avec Symfony
 
 Puisque le SDK est agnostique, vous pouvez l'intégrer facilement dans Symfony en déclarant les classes comme services dans votre fichier `config/services.yaml` :
