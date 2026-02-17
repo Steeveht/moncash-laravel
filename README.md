@@ -272,6 +272,14 @@ public function callback(Request $request) {
 }
 ```
 
+## Astuce : Tester en local (Webhook)
+
+Pour recevoir les notifications de paiement sur votre machine locale, utilisez **Ngrok** :
+
+1. `ngrok http 8000`
+2. Utilisez l'URL fournie par Ngrok comme **Return URL** dans le portail MonCash.
+3. Pour Laravel, n'oubliez pas d'ajouter votre route callback dans l'exception du middleware CSRF.
+
 ## Architecture
 
 - **`src/Sdk/`** : Logique métier pure, framework-agnostic.
