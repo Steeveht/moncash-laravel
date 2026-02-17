@@ -138,6 +138,36 @@ Exceptions spécifiques disponibles :
 - `Steeve\MonCashLaravel\Sdk\Exception\MonCashTransferException`
 - `Steeve\MonCashLaravel\Sdk\Exception\MonCashException` (Base)
 
+## Utilisation hors Laravel (PHP Natif)
+
+Ce package est conçu pour être "agnostique". Vous pouvez utiliser les classes du dossier `Sdk` dans n'importe quel projet PHP.
+
+```php
+require 'vendor/autoload.php';
+
+use Steeve\MonCashLaravel\Sdk\Config;
+use Steeve\MonCashLaravel\Sdk\MonCashAuth;
+use Steeve\MonCashLaravel\Sdk\MonCashPayment;
+use GuzzleHttp\Client;
+
+// 1. Initialiser la configuration
+$config = new Config(
+    Config::MODE_SANDBOX,
+    'votre_client_id',
+    'votre_secret'
+);
+
+// 2. Créer le client HTTP et l'Auth
+$client = new Client();
+$auth = new MonCashAuth($config, $client);
+
+// 3. Utiliser les modules
+$payment = new MonCashPayment($config, $auth, $client);
+$result = $payment->createPayment('ORDER-101', 250);
+
+echo $result['redirect_url'];
+```
+
 ## Architecture
 
 - **`src/Sdk/`** : Logique métier pure, framework-agnostic.
