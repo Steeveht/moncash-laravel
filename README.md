@@ -138,9 +138,11 @@ Exceptions spécifiques disponibles :
 - `Steeve\MonCashLaravel\Sdk\Exception\MonCashTransferException`
 - `Steeve\MonCashLaravel\Sdk\Exception\MonCashException` (Base)
 
-## Utilisation hors Laravel (PHP Natif)
+## Utilisation hors Laravel (PHP Natif) - Exemple Complet
 
-Ce package est conçu pour être "agnostique". Vous pouvez utiliser les classes du dossier `Sdk` dans n'importe quel projet PHP.
+Ce package est conçu pour être "agnostique". Voici comment l'utiliser dans un projet PHP classique avec une base de données (PDO).
+
+### 1. Initialiser le SDK
 
 ```php
 require 'vendor/autoload.php';
@@ -150,22 +152,46 @@ use Steeve\MonCashLaravel\Sdk\MonCashAuth;
 use Steeve\MonCashLaravel\Sdk\MonCashPayment;
 use GuzzleHttp\Client;
 
-// 1. Initialiser la configuration
-$config = new Config(
-    Config::MODE_SANDBOX,
-    'votre_client_id',
-    'votre_secret'
-);
-
-// 2. Créer le client HTTP et l'Auth
+$config = new Config(Config::MODE_SANDBOX, 'VOTRE_CLIENT_ID', 'VOTRE_SECRET');
 $client = new Client();
 $auth = new MonCashAuth($config, $client);
+$monCashPayment = new MonCashPayment($config, $auth, $client);
+```
 
-// 3. Utiliser les modules
-$payment = new MonCashPayment($config, $auth, $client);
-$result = $payment->createPayment('ORDER-101', 250);
+### 2. Créer une transaction (`checkout.php`)
 
-echo $result['redirect_url'];
+```php
+$orderId = "CMD-" . uniqid();
+$amount = 1500;
+
+try {
+    $payment = $monCashPayment->createPayment($orderId, $amount);
+    $token = $payment['payment_token']['token'];
+
+    // Enregistrement en base de données
+    $db = new PDO('mysql:host=localhost;dbname=votre_db', 'root', '');
+    $stmt = $db->prepare("INSERT INTO transactions (order_id, amount, payment_token) VALUES (?, ?, ?)");
+    $stmt->execute([$orderId, $amount, $token]);
+
+    header('Location: ' . $payment['redirect_url']);
+} catch (Exception $e) { echo "Erreur : " . $e->getMessage(); }
+```
+
+### 3. Confirmation de paiement (`webhook.php`)
+
+```php
+$transactionId = $_POST['transactionId'] ?? null;
+if (!$transactionId) die("Accès refusé.");
+
+try {
+    $details = $monCashPayment->verifyByTransactionId($transactionId);
+    if ($details['payment']['message'] === 'successful') {
+        // Mise à jour de la base de données après vérification
+        $db = new PDO('mysql:host=localhost;dbname=votre_db', 'root', '');
+        $stmt = $db->prepare("UPDATE transactions SET status = 'SUCCESSFUL' WHERE order_id = ?");
+        $stmt->execute([$details['payment']['order_id']]);
+    }
+} catch (Exception $e) { /* Log error */ }
 ```
 
 ## Utilisation avec Symfony
