@@ -1,0 +1,5 @@
+/vendor/
+/composer.lock
+.env
+/tests/wrapper_test.php
+/tests/sdk_mock_test.php

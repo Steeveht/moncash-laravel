@@ -1,0 +1,38 @@
+{
+    "name": "steeve/moncash-laravel",
+    "description": "Une librairie Laravel pour l'intégration de l'API MonCash Complet (Digicel Haïti).",
+    "type": "library",
+    "license": "MIT",
+      "authors": [
+        {
+            "name": "Jean Thomason Steeve",
+            "email": "jeanthomasonsteeve@gmail.com",
+            "role": "Développeur"
+        }
+    ],
+     "require": {
+        "guzzlehttp/guzzle": "^7.10",
+        "illuminate/support": "^12.51"
+    },
+    "autoload": {
+        "psr-4": {
+            "Steeve\\MonCashLaravel\\": "src/"
+        }
+    },
+"extra": {
+    "laravel": {
+        "providers": [
+            "Steeve\\MonCashLaravel\\MonCashServiceProvider"
+        ],
+        "aliases": {
+            "MonCash": "Steeve\\MonCashLaravel\\Facades\\MonCash"
+        }
+    }
+},
+  
+    "minimum-stability": "stable",
+    "prefer-stable": true
+
+
+   
+}
