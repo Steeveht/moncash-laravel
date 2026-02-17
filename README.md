@@ -313,6 +313,12 @@ Dans le portail MonCash Business, utilisez cette adresse pour le **Return URL** 
 
 N'oubliez pas d'ajouter votre route callback dans les exceptions du middleware CSRF (`bootstrap/app.php` ou `VerifyCsrfToken.php`).
 
+### Pro Alternative : Cloudflare Tunnel
+
+Pour une solution 100% gratuite et illimitée sans page d'avertissement :
+`cloudflared tunnel --url http://localhost:8000`
+Consultez le guide complet dans `USAGE_GUIDE.md`.
+
 ## Architecture
 
 - **`src/Sdk/`** : Logique métier pure, framework-agnostic.
