@@ -168,6 +168,45 @@ $result = $payment->createPayment('ORDER-101', 250);
 echo $result['redirect_url'];
 ```
 
+## Utilisation avec Symfony
+
+Puisque le SDK est agnostique, vous pouvez l'intégrer facilement dans Symfony en déclarant les classes comme services dans votre fichier `config/services.yaml` :
+
+```yaml
+# config/services.yaml
+services:
+  Steeve\MonCashLaravel\Sdk\Config:
+    arguments:
+      $mode: "%env(MONCASH_MODE)%"
+      $clientId: "%env(MONCASH_CLIENT_ID)%"
+      $clientSecret: "%env(MONCASH_SECRET)%"
+
+  Steeve\MonCashLaravel\Sdk\MonCashAuth:
+    arguments:
+      $config: '@Steeve\MonCashLaravel\Sdk\Config'
+      $client: '@GuzzleHttp\Client'
+
+  Steeve\MonCashLaravel\Sdk\MonCashPayment:
+    arguments:
+      $config: '@Steeve\MonCashLaravel\Sdk\Config'
+      $auth: '@Steeve\MonCashLaravel\Sdk\MonCashAuth'
+      $client: '@GuzzleHttp\Client'
+
+  # Répétez pour MonCashBusiness et MonCashCustomer si nécessaire
+```
+
+Ensuite, utilisez l'injection de dépendance dans vos contrôleurs :
+
+```php
+use Steeve\MonCashLaravel\Sdk\MonCashPayment;
+
+public function pay(MonCashPayment $moncashPayment)
+{
+    $result = $moncashPayment->createPayment('ORDER-123', 500);
+    return $this->redirect($result['redirect_url']);
+}
+```
+
 ## Architecture
 
 - **`src/Sdk/`** : Logique métier pure, framework-agnostic.
