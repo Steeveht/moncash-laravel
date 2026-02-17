@@ -19,7 +19,10 @@ return [
         'sandbox' => 'https://sandbox.moncashbutton.digicelgroup.com/Moncash-middleware',
         'live'    => 'https://moncashbutton.digicelgroup.com/Moncash-middleware',
     ],
-    
+
+    // Temps d'attente maximum pour les requêtes (en secondes)
+    'timeout' => 60,
+
     // Temps d'expiration du token (en secondes) - Par défaut 50s pour être sûr
     'token_lifetime' => 50,
 ];

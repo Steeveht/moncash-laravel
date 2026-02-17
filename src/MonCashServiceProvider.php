@@ -25,7 +25,8 @@ class MonCashServiceProvider extends ServiceProvider
                 $configData['mode'] ?? 'sandbox',
                 $configData['client_id'] ?? '',
                 $configData['client_secret'] ?? '',
-                $configData['timeout'] ?? 60
+                $configData['timeout'] ?? 60,
+                $configData['token_lifetime'] ?? 50
             );
 
             $client = new \GuzzleHttp\Client([

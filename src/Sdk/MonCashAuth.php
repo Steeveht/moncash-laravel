@@ -51,12 +51,13 @@ class MonCashAuth
             }
 
             $this->accessToken = $body['access_token'];
-            // Default to 50 seconds if expires_in is missing, or use the provided value. 
-            // The prompt mentioned "Par défaut 50s pour être sûr" in config, adhering to that margin.
-            $expiresIn = isset($body['expires_in']) ? (int)$body['expires_in'] : 3600;
 
-            // Subtract a buffer (e.g. 60s) to refresh before actual expiration
-            $this->expiresAt = time() + $expiresIn - 60;
+            // Use API expires_in or fallback to config lifetime
+            $expiresIn = isset($body['expires_in']) ? (int)$body['expires_in'] : 3600;
+            $lifetime = min($expiresIn, $this->config->getTokenLifetime());
+
+            // Subtract a small buffer (5s) to refresh slightly before local expiration
+            $this->expiresAt = time() + $lifetime - 5;
 
             return $this->accessToken;
         } catch (GuzzleException $e) {

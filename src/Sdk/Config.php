@@ -11,6 +11,7 @@ class Config
     private string $clientId;
     private string $clientSecret;
     private int $timeout;
+    private int $tokenLifetime;
 
     private array $apiUrls = [
         self::MODE_SANDBOX => 'https://sandbox.moncashbutton.digicelgroup.com/Api',
@@ -22,12 +23,13 @@ class Config
         self::MODE_LIVE => 'https://moncashbutton.digicelgroup.com/Moncash-middleware',
     ];
 
-    public function __construct(string $mode, string $clientId, string $clientSecret, int $timeout = 60)
+    public function __construct(string $mode, string $clientId, string $clientSecret, int $timeout = 60, int $tokenLifetime = 50)
     {
         $this->mode = $mode;
         $this->clientId = $clientId;
         $this->clientSecret = $clientSecret;
         $this->timeout = $timeout;
+        $this->tokenLifetime = $tokenLifetime;
     }
 
     public function getMode(): string
@@ -48,6 +50,11 @@ class Config
     public function getTimeout(): int
     {
         return $this->timeout;
+    }
+
+    public function getTokenLifetime(): int
+    {
+        return $this->tokenLifetime;
     }
 
     public function getBaseApiUrl(): string
