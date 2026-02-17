@@ -4,11 +4,12 @@ Une librairie Laravel robuste et agnostique pour l'intégration de l'API MonCash
 
 ## Fonctionnalités
 
-- **Authentification OAuth 2.0** : Gestion automatique et mise en cache du token.
-- **Paiements** : Création de paiement et redirection facile.
-- **Transferts (Business)** : Envoi d'argent P2P et vérification de solde.
-- **Clients** : Vérification de l'existence d'un compte MonCash.
-- **Agnostique** : Le cœur du SDK (`src/Sdk`) peut être utilisé hors de Laravel.
+- **Authentification OAuth 2.0** : Gestion automatique, mise en cache intelligente et rafraîchissement optimisé du token.
+- **Paiements** : Création de paiement, gestion des redirections et vérification par ID de transaction ou de commande.
+- **Transferts (Business)** : Envoi d'argent P2P, vérification de solde et de statut de transfert.
+- **Clients** : Vérification de l'existence et du statut d'un compte MonCash.
+- **Agnostique** : Cœur du SDK (`src/Sdk`) indépendant, utilisable hors Laravel (Symfony, PHP pur).
+- **Robuste** : Gestion complète des exceptions et configuration flexible (timeouts, lifetime du token).
 
 ## Installation
 
@@ -321,9 +322,12 @@ Consultez le guide complet dans `USAGE_GUIDE.md`.
 
 ## Architecture
 
-- **`src/Sdk/`** : Logique métier pure, framework-agnostic.
-- **`src/MonCash.php`** : Wrapper Laravel principal.
-- **`src/Facades/MonCash.php`** : Accès statique simplifié.
+Le package suit une structure modulaire pour garantir sa flexibilité :
+
+- **`src/Sdk/`** : Logique métier pure, sans aucune dépendance à Laravel.
+- **`src/MonCash.php`** : Point d'entrée principal (Wrapper) pour Laravel.
+- **`src/MonCashServiceProvider.php`** : Enregistrement automatique du package et de sa configuration.
+- **`src/Facades/MonCash.php`** : Facade pour un accès statique élégant.
 
 ## License
 
