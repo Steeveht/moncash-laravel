@@ -1,0 +1,9 @@
+# .gitattributes
+
+/tests export-ignore
+/config/pdf export-ignore
+/.gitignore export-ignore
+/.gitattributes export-ignore
+/USAGE_GUIDE.md export-ignore
+/composer.lock export-ignore
+/phpunit.xml export-ignore
