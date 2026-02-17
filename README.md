@@ -272,13 +272,38 @@ public function callback(Request $request) {
 }
 ```
 
-## Astuce : Tester en local (Webhook)
+## Tester en local avec Ngrok (Guide de A à Z)
 
-Pour recevoir les notifications de paiement sur votre machine locale, utilisez **Ngrok** :
+Pour que MonCash puisse envoyer des notifications de paiement à votre ordinateur local, vous devez utiliser un tunnel.
 
-1. `ngrok http 8000`
-2. Utilisez l'URL fournie par Ngrok comme **Return URL** dans le portail MonCash.
-3. Pour Laravel, n'oubliez pas d'ajouter votre route callback dans l'exception du middleware CSRF.
+### 1. Installation
+
+Téléchargez Ngrok sur [ngrok.com](https://ngrok.com/) et authentifiez-vous :
+
+```bash
+ngrok config add-authtoken VOTRE_TOKEN
+```
+
+### 2. Lancer le tunnel
+
+Lancez votre serveur local (ex: port 8000), puis :
+
+```bash
+ngrok http 8000
+```
+
+Copiez l'adresse `Forwarding` (ex: `https://a1b2c3d4.ngrok-free.app`).
+
+### 3. Configurer MonCash
+
+Dans le portail MonCash Business, utilisez cette adresse pour le **Return URL** :
+
+- Laravel : `https://a1b2c3d4.ngrok-free.app/api/moncash/callback`
+- PHP Natif : `https://a1b2c3d4.ngrok-free.app/webhook.php`
+
+### 4. Gérer le CSRF (Laravel)
+
+N'oubliez pas d'ajouter votre route callback dans les exceptions du middleware CSRF (`bootstrap/app.php` ou `VerifyCsrfToken.php`).
 
 ## Architecture
 
